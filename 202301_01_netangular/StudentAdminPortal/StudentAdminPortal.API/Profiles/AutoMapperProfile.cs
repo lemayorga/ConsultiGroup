@@ -11,6 +11,21 @@ namespace StudentAdminPortal.API.Profiles
             CreateMap<StudentDto, Student>().ReverseMap();
             CreateMap<GenderDto, Gender>().ReverseMap();
             CreateMap<AddressDto, Address>().ReverseMap();
+
+            CreateMap<UpdateStudent, Student>()
+                .AfterMap<UpdateStudentAfterMap>();
+        }
+    }
+
+    public class UpdateStudentAfterMap : IMappingAction<UpdateStudent, Student>
+    {
+        public void Process(UpdateStudent source, Student destination, ResolutionContext context)
+        {
+            destination.Address = new Address
+            {
+                PostalAddress = source.PostalAddress,
+                PhysicalAddress = source.PhysicalAddress
+            };
         }
     }
 }

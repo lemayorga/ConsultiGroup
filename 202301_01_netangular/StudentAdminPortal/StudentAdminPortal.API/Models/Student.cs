@@ -14,6 +14,7 @@ namespace StudentAdminPortal.API.Models
         public string Email { get; set; }
         public string Mobile { get; set; }
         public string ProfileImageUrl { get; set; }
+        public Guid GenderId { get; set; }
         public Gender Gender { get; set; }
         public Address Address { get; set; }
     }

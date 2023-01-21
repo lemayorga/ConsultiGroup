@@ -55,7 +55,7 @@ namespace StudentAdminPortal.API
 
 
             services.AddScoped<IStudentRepository, StudentRepository>();
-
+            services.AddScoped<IGenderRepository, GenderRepository>();
             services.AddAutoMapper(typeof(Startup).Assembly);
         }
 
