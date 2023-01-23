@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using StudentAdminPortal.API.DomainModels;
 using StudentAdminPortal.API.Models;
+using System;
 
 namespace StudentAdminPortal.API.Profiles
 {
@@ -14,6 +15,9 @@ namespace StudentAdminPortal.API.Profiles
 
             CreateMap<UpdateStudent, Student>()
                 .AfterMap<UpdateStudentAfterMap>();
+            
+            CreateMap<AddStudent, Student>()
+            .AfterMap<AddStudentRequestAfterMap>();
         }
     }
 
@@ -25,6 +29,20 @@ namespace StudentAdminPortal.API.Profiles
             {
                 PostalAddress = source.PostalAddress,
                 PhysicalAddress = source.PhysicalAddress
+            };
+        }
+    }
+
+    public class AddStudentRequestAfterMap : IMappingAction<AddStudent, Student>
+    {
+        public void Process(AddStudent source, Student destination, ResolutionContext context)
+        {
+            destination.Id = Guid.NewGuid();
+            destination.Address = new Address()
+            {
+                Id = Guid.NewGuid(),
+                PhysicalAddress = source.PhysicalAddress,
+                PostalAddress = source.PostalAddress
             };
         }
     }

@@ -10,11 +10,11 @@ const routes: Routes = [
     pathMatch: 'full'
   },
   {
-    path: 'stutents',
+    path: 'students',
     component: StudentsComponent
   },
   {
-    path: 'stutents/:id',
+    path: 'students/:id',
     component: ViewStudentComponent
   }  
 ];

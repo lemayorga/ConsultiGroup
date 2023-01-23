@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Address } from 'src/app/models/api-models/address.model';
 import { Gender } from 'src/app/models/api-models/gender.model';
 import { Student } from 'src/app/models/api-models/student.model';
@@ -37,11 +37,15 @@ export class ViewStudentComponent implements OnInit{
     }
   };
 
+  isNewStudent = false;
+  header = '';
+  displayProfileImageUrl = '';
 
   constructor(private  studentService: StudentService,
            private route: ActivatedRoute,
            private genderervice: GenderService,
-           private snackbar: MatSnackBar){ }
+           private snackbar: MatSnackBar,
+           private router: Router){ }
 
 
   ngOnInit(): void {
@@ -50,19 +54,37 @@ export class ViewStudentComponent implements OnInit{
         this.studentId = param.get('id');
 
         if(this.studentId){
-          this.studentService.getStudent(this.studentId)
+          if (this.studentId.toLowerCase() === 'Add'.toLowerCase()) {
+
+            // -> new Student Functionality
+            this.isNewStudent = true;
+            this.header = 'Add New Student';
+           this.setImage();
+           
+          }else {
+              // -> Existing Student Functionality
+              this.isNewStudent = false;
+              this.header = 'Edit Student';
+              
+            this.studentService.getStudent(this.studentId)
+            .subscribe(
+              (successResponse) => {
+                this.student = successResponse;
+                this.setImage();
+              },
+              (errorResponse) => {
+                this.setImage();
+              }
+            );
+          }
+
+          
+          this.genderervice.getGenders()
           .subscribe(
             (response) =>{
                 console.log(response)
-                this.student = response;
-            });
-
-            this.genderervice.getGenders()
-            .subscribe(
-              (response) =>{
-                  console.log(response)
-                  this.genderList = response;
-              });
+                this.genderList = response;
+           });
         }
       });
   }
@@ -81,5 +103,80 @@ export class ViewStudentComponent implements OnInit{
         console.log(errorResponse);
       }
     );
+  }
+
+  onDelete(): void {
+    debugger;
+    this.studentService.deleteStudent(this.student.id)
+      .subscribe(
+        (successResponse) => {
+          this.snackbar.open('Student deleted successfully', undefined, {
+            duration: 2000
+          });
+
+          setTimeout(() => {
+            this.router.navigateByUrl('students');
+          }, 2000);
+        },
+        (errorResponse) => {
+          // Log
+        }
+      );
+  }
+
+  onAdd(): void {
+   // if (this.studentDetailsForm?.form.valid) {
+      // Submit form date to api
+      this.studentService.addStudent(this.student)
+        .subscribe(
+          (successResponse) => {
+            this.snackbar.open('Student added successfully', undefined, {
+              duration: 2000
+            });
+
+            setTimeout(() => {
+              this.router.navigateByUrl(`students/${successResponse.id}`);
+            }, 2000);
+
+          },
+          (errorResponse) => {
+            // Log
+            console.log(errorResponse);
+          }
+        );
+   // }
+  }  
+
+    uploadImage(event: any): void {
+    if (this.studentId) {
+      const file: File = event.target.files[0];
+      this.studentService.uploadImage(this.student.id, file)
+        .subscribe(
+          (successResponse) => {
+            this.student.profileImageUrl = successResponse;
+            this.setImage();
+
+            // Show a notification
+            this.snackbar.open('Profile Image Updated', undefined, {
+              duration: 2000
+            });
+
+          },
+          (errorResponse) => {
+
+          }
+        );
+
+    }
+
+  }
+
+  private setImage(): void {
+    if (this.student.profileImageUrl) {
+      this.displayProfileImageUrl = this.studentService.getImagePath(this.student.profileImageUrl);
+    } else {
+      // Display a default
+      this.displayProfileImageUrl = '/assets/user.png';
+    }
   }
 }
