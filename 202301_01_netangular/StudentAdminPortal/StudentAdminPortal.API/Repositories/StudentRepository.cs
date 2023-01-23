@@ -31,6 +31,11 @@ namespace StudentAdminPortal.API.Repositories
                 FirstOrDefaultAsync(x => x.Id == studentId);
         }
 
+        public async Task<Gender> GetGendersExistsAsync(Guid genderId)
+        {
+            return await context.Gender.FirstAsync(x => x.Id == genderId);
+        }
+
         public async Task<bool> ExistsAsync(Guid studentId)
         {
             return await context.Student.AnyAsync(x => x.Id == studentId);

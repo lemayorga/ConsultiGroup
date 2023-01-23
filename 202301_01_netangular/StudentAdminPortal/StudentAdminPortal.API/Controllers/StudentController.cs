@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 
 namespace StudentAdminPortal.API.Controllers
 {
+    [ApiController]
     public class StudentController : Controller
     {
         private readonly IStudentRepository _repoStudent;
@@ -48,7 +49,7 @@ namespace StudentAdminPortal.API.Controllers
 
         [HttpPut]
         [Route("[controller]/{studentId:guid}")]
-        public async Task<IActionResult> UpdateStudent(Guid studentId, [FromBody] UpdateStudent request)
+        public async Task<IActionResult> UpdateStudent([FromRoute] Guid studentId, [FromBody] UpdateStudent request)
         {
             if (await _repoStudent.ExistsAsync(studentId))
             {
