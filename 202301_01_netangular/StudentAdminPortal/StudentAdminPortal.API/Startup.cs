@@ -1,3 +1,4 @@
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
@@ -5,12 +6,14 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using StudentAdminPortal.API.Models;
 using StudentAdminPortal.API.Repositories;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -28,12 +31,38 @@ namespace StudentAdminPortal.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
+
+            services.AddCors((opt) =>
+            {
+                //opt.AddPolicy("app_angular",(builder) => {
+                //    builder.WithOrigins("http://localhost:4200/")
+                //     .AllowAnyHeader()
+                //     .WithMethods("GET","POST","PUT","DELETE")
+                //     .WithExposedHeaders("*");
+                //});
+                opt.AddPolicy(name: "app_angular", builder =>
+                {
+                    builder.WithOrigins("http://localhost:4200")
+                                    .AllowAnyHeader()
+                                    .AllowAnyMethod()
+                                    .AllowCredentials()
+                                    .Build();
+                });
+
+
+            });
             services.AddControllers();
+
+            services.AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<Startup>());
+
             services.AddDbContext<StudentContext>(options =>
                  options.UseSqlServer(connectionString: Configuration.GetConnectionString("Sql_BDConexion")));
 
 
             services.AddScoped<IStudentRepository, StudentRepository>();
+            services.AddScoped<IGenderRepository, GenderRepository>();
+            services.AddScoped<IImageRepository, LocalStorageImageRepository>();
 
             services.AddAutoMapper(typeof(Startup).Assembly);
         }
@@ -48,7 +77,17 @@ namespace StudentAdminPortal.API
 
             app.UseHttpsRedirection();
 
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "Resources")),
+                RequestPath = "/Resources"
+            });
+
+  
+
             app.UseRouting();
+
+            app.UseCors("app_angular");
 
             app.UseAuthorization();
 
